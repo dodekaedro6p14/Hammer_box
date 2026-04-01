@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Prima Stream Recorder</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+<body>
+    <div id="agrupar">
+        <header>
+            <h1 style="color: var(--accent-color); margin-bottom: 1rem;">SCREEN & CAM RECORDER</h1>
+        </header>
+
+        <div class="video-container">
+            <div>
+                <h3>Preview Grabación</h3>
+                <video id="preview" autoplay muted></video>
+            </div>
+            <div>
+                <h3>Cámara en Vivo</h3>
+                <video id="webcam" autoplay muted></video>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="btnStart" class="btn-record">Empezar Grabación</button>
+            <button id="btnStop" class="btn-stop" disabled>Detener</button>
+            <a id="downloadLink" class="btn-download">Descargar Video</a>
+        </div>
+        
+        <p id="timer" style="margin-top: 10px; color: var(--secondary);">Tiempo: 00:00</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

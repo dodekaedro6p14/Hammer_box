@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prima Text-to-Speech Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="app-container">
+        <header>
+            <h1>PRIMA AUDIO STUDIO</h1>
+            <p>Convierte tus documentos en voz</p>
+        </header>
+
+        <div id="dropZone" class="drop-zone">
+            <p>Arrastra tu archivo .TXT o .PDF aquí</p>
+            <span class="or-text">o</span>
+            <label for="fileInput" class="btn-browse">Explorar Archivos</label>
+            <input type="file" id="fileInput" accept=".txt, .pdf" hidden>
+        </div>
+
+        <textarea id="textDisplay" placeholder="El texto de tu archivo aparecerá aquí y podrás editarlo antes de reproducirlo..."></textarea>
+
+        <div class="controls">
+            <select id="languageSelect">
+                <option value="es-ES" selected>Español</option>
+                <option value="en-US">Inglés (English)</option>
+                <option value="fr-FR">Francés (Français)</option>
+                <option value="it-IT">Italiano</option>
+                <option value="ru-RU">Ruso (Русский)</option>
+                <option value="ko-KR">Coreano (한국어)</option>
+                <option value="ja-JP">Japonés (日本語)</option>
+                <option value="zh-CN">Chino (中文)</option>
+                <option value="hi-IN">Hindi (हिन्दी)</option>
+                <option value="ar-SA">Árabe (العربية)</option>
+            </select>
+
+            <button id="btnPlay" class="btn-play">▶ Reproducir</button>
+            <button id="btnPause" class="btn-pause">⏸ Pausar</button>
+            <button id="btnStop" class="btn-stop">⏹ Detener</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lector PDF Espacial</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link rel="stylesheet" href="lector_pdf.css">
+</head>
+<body id="drop-area">
+    <div>
+         <div id="drop-area">
+        <p>Arrastra y suelta tu archivo PDF aquí</p>
+    </div>
+    
+    <div id="file-list"></div>
+    </div>
+    <div id="space-background"></div>
+
+    <div class="main-container">
+        <div class="toolbar">
+            <label class="btn" for="file-upload">📁 Abrir PDF</label>
+            <input type="file" id="file-upload" accept="application/pdf">
+             
+
+            <div class="color-picker"> 
+                <span>Fondo:</span>	
+                <input type="color" id="bgColor" value="#000000"> 
+            </div>            
+            <div class="color-picker">		
+                <span>Texto:</span>		
+                <input type="color" id="textColor" value="#000000">		
+            </div> 	
+                <span id="page-info">Páginas: 0 / 0</span> 
+        </div> 
+
+        <div id="pdf-viewer-container">
+            <div style="text-align: center; padding-top: 50px;" id="welcome-msg"; color: #fffff >
+                <h2>Lector PDF Galáctico</h2>
+                <p>Sube un archivo para comenzar la lectura entre estrellas.</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="topBtn" onclick="scrollToTop()">↑</button>
+
+    <script src="script_pdf.js"></script>
+</body>
+</html>
