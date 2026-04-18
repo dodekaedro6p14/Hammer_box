@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajedrez Maestro - Motor Estratégico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Ajedrez Pro - Motor Estratégico</h1>
+
+    <div class="header-info">
+        <div id="timer-w" class="timer">Blancas: 10:00</div>
+        <div id="status-box">TURNO BLANCAS</div>
+        <div id="timer-b" class="timer">IA: 10:00</div>
+    </div>
+
+
+
+    <div class="game-wrapper">
+        <div class="board-container">
+            <div class="letters-row" style="grid-area: letters-top;">
+                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+
+            <div class="numbers-col" style="grid-area: numbers-left;">
+                <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+
+            <div id="chess-board"></div>
+
+            <div class="numbers-col" style="grid-area: numbers-right;">
+                <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+
+            <div class="letters-row" style="grid-area: letters-bottom;">
+                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+        </div>
+        <div id="side-panel" class="side-panel">
+            <h3>Historial de Jugadas</h3>
+            <div id="move-history"></div>
+
+        </div>
+
+    </div>
+    <div class="controls">
+        <button onclick="location.reload()">Reiniciar Partida</button>
+    </div>
+
+
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
