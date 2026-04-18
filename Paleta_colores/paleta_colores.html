@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prisma Chromatic Selector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <h1>PRISMA CHROMATIC SELECTOR</h1>
+            <div class="size-control">
+                <label for="circleSize">Tamaño del Círculo:</label>
+                <input type="range" id="circleSize" min="150" max="550" value="350">
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section class="wheel-section">
+                <div id="colorWheel" class="canvas-wheel"></div>
+            </section>
+
+            <aside class="details-sidebar" id="sidebar">
+                <h2>Detalles del Color</h2>
+                <div id="selectedInfo" class="selected-info">
+                    <p>Selecciona un color del arcoíris</p>
+                </div>
+                <div id="paletteContainer" class="palette-grid"></div>
+            </aside>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+:root {
+    --primary: #2c3e50;
+    --secondary: #818cf8;
+    --accent: #e74c3c;
+    --bg-color: #0f172a;
+    --text-color: #c9d1d9;
+    --white: #ffffff;
+    --card-bg: #161b22;
+    --border-color: #30363d;
+    --accent-color: #58a6ff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+header {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+h1 { color: var(--accent-color); letter-spacing: 2px; font-size: 1.5rem; }
+
+.workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.wheel-section {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+}
+
+.canvas-wheel {
+    position: relative;
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    transition: width 0.2s, height 0.2s;
+}
+
+/* Barra Lateral */
+.details-sidebar {
+    flex: 1;
+    max-width: 400px;
+    background: var(--card-bg);
+    border-left: 1px solid var(--border-color);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.palette-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.color-card {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #0d1117;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.swatch {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    margin-right: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.codes { font-family: 'Courier New', monospace; font-size: 0.9rem; }
