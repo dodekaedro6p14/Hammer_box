@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJ3DR3Z</title>
+    <link rel="stylesheet" href="style_v2.css">
+</head>
+
+<body style="background-image: url(../../ima/andromeda.png); background-size: cover;">
+
+    <h1>Motor Estratégico</h1>
+
+    <div class="header-info">
+        <div id="status-box">TURNO BLANCAS</div>        
+    </div>
+
+    <div class="game-wrapper">
+        <div class="board-container">
+            <div class="letters-row" style="grid-area: letters-top;">
+                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+
+            <div class="numbers-col" style="grid-area: numbers-left;">
+                <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+
+            <div id="chess-board"></div>
+
+            <div class="numbers-col" style="grid-area: numbers-right;">
+                <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+
+            <div class="letters-row" style="grid-area: letters-bottom;">
+                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+        </div>
+        <div id="side-panel" class="side-panel">
+            <h3>H1570R14L</h3>
+            <div id="move-history"></div>
+
+        </div>
+
+    </div>
+    <div class="controls">
+        <button onclick="location.reload()">Reiniciar Partida</button>
+    </div>
+
+
+
+    <script src="config_v2.js"></script>
+    <script src="script_2.js"></script>
+</body>
+
+</html>
