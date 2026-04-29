@@ -1,22 +1,24 @@
 // --- MOTOR DE AJEDREZ PROFESIONAL
-// Lógica de juego, IA, Enroque y Temporizadores.
+
+let evaluationCount = 0;
+let whiteSeconds = 600;
+let blackSeconds = 600;
+let gameStarted = true; // Asegúrate de controlar esto con el estado de tu partida
+let currentPlayer = 'W'; // 'W' para blancas, 'B' para negras
+let aiThinking = false; // Evita que la IA se ejecute en paralelo
 
 // --- 1. REFERENCIAS AL DOM ---
 const boardEl = document.getElementById('chess-board');
 const statusEl = document.getElementById('status-box');
 const historyEl = document.getElementById('move-history');
-const timerWEl = document.getElementById('timer-w');
-const timerBEl = document.getElementById('timer-b');
 
-// --- 2. INICIALIZACIÓN ---
+const MAX_EVALUATIONS = 8000;
+
 window.onload = () => {
-    gameStarted = true; // ✅ CRÍTICO: Iniciar el juego
     updateUI();
-    startTimers(); // Inicia la cuenta atrás
+    // startTimers(); <--- ¡BORRA ESTA LÍNEA!
 };
-
 // --- FUNCIONES DE UTILIDAD ---
-
 function findKing(color, b) {
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
@@ -60,7 +62,6 @@ function isCheck(color, b) {
 }
 
 // --- 3. LÓGICA DE MOVIMIENTOS ---
-
 function getPseudoLegalMoves(r, c, b, ignoreCastling = false) {
     const moves = [];
     const piece = b[r][c];
@@ -195,21 +196,11 @@ function makeSimulatedMove(b, move) {
 }
 
 // --- 4. EJECUCIÓN DE JUGADAS ---
-
 function executeMove(fR, fC, tR, tC, special) {
     const piece = board[fR][fC];
 
-    // ⚡ AGREGA: Validación de seguridad
     if (!piece) {
         console.error('❌ Movimiento inválido: No hay pieza en', fR, fC);
-        return;
-    }
-
-    const distance = Math.max(Math.abs(tR - fR), Math.abs(tC - fC));
-    
-    // ⚡ Valida que el movimiento sea razonable según la pieza
-    if (piece.toLowerCase() === 'p' && distance > 2) {
-        console.error('❌ Peón intenta movimiento imposible:', distance);
         return;
     }
 
@@ -225,7 +216,7 @@ function executeMove(fR, fC, tR, tC, special) {
         playSound('enroque');
     }
 
-    const isCaptureMove = board[tR][tC] !== ''; // ⚡ AGREGA: Detecta captura
+    const isCaptureMove = board[tR][tC] !== '';
 
     // Actualizar estados de movimiento
     if (piece === 'K') movedState.W_K = true;
@@ -238,12 +229,11 @@ function executeMove(fR, fC, tR, tC, special) {
     board[tR][tC] = piece;
     board[fR][fC] = '';
 
-    // ⚡ AGREGA: Sonido según el movimiento
-    if (!special) { // Solo si NO es enroque
+    if (!special) {
         if (isCaptureMove) {
-            playSound('capture'); // Sonido de captura
+            playSound('capture');
         } else {
-            playSound('move'); // Sonido de movimiento normal
+            playSound('move');
         }
     }
 
@@ -254,14 +244,29 @@ function executeMove(fR, fC, tR, tC, special) {
     entry.textContent = moveNotation;
     historyEl.appendChild(entry);
 
-    // IMPORTANTE: Comprobar promoción antes de cambiar turno
+    // Comprobar promoción antes de cambiar turno
     if (piece.toLowerCase() === 'p') {
         checkPromotion(tR, tC, piece === piece.toUpperCase() ? 'W' : 'B');
+        return; // checkPromotion se encarga de cambiar el turno
     }
 
-    turn = (turn === 'W') ? 'B' : 'W';
+    // Cambiar turno
+    turn = turn === 'W' ? 'B' : 'W';
+    currentPlayer = turn;
+    firstMoveCompleted = true; // ✅ Marcar que ya empezó la partida
+
     updateUI();
+
+    // Si ahora es turno de la IA, iniciarla
+    if (turn === 'B' && gameActive) {
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                aiBrain();
+            });
+        }, 50);
+    }
 }
+
 
 function updateUI() {
     boardEl.innerHTML = '';
@@ -276,17 +281,13 @@ function updateUI() {
             if (selected && selected.r === r && selected.c === c) sq.classList.add('selected');
             if (checkPos && checkPos.r === r && checkPos.c === c) sq.classList.add('check-warning');
 
-            // ✅ PRIMERO: Renderizar la pieza (si existe)
             if (piece) {
                 sq.textContent = PIECES_CHAR[piece];
                 sq.classList.add(piece === piece.toUpperCase() ? 'p-white' : 'p-black');
             }
 
-            // ✅ SEGUNDO: Agregar el evento onclick (DENTRO del bucle)
             sq.onclick = () => {
                 if (!gameActive || turn !== 'W') return;
-
-                // Bloquear clics si el menú de promoción está visible
                 if (document.querySelector('.promotion-modal')) return;
 
                 if (selected) {
@@ -296,13 +297,13 @@ function updateUI() {
                     if (move) {
                         executeMove(move.fR, move.fC, move.tR, move.tC, move.special);
                         selected = null;
-                        updateUI();
-
-                        // Solo llamar a la IA si NO hay una promoción pendiente
                         if (!isPromotionPending(move.tR, move.tC, 'W')) {
                             statusEl.textContent = "IA PENSANDO...";
-                            setTimeout(aiBrain, 500);
                         }
+                    } else if (piece && piece === piece.toUpperCase()) {
+                        // Reclicó otra pieza propia → redirigir selección
+                        selected = { r, c };
+                        updateUI();
                     } else {
                         selected = null;
                         updateUI();
@@ -316,15 +317,14 @@ function updateUI() {
             boardEl.appendChild(sq);
         }
     }
+
     const legalMoves = getLegalMoves(turn, board);
     if (legalMoves.length === 0) {
         gameActive = false;
         if (isCheck(turn, board)) {
-            // Jaque Mate
             statusEl.textContent = turn === 'W' ? "¡JAQUE MATE! DERROTA" : "¡JAQUE MATE! ¡GANASTE!";
             playSound('win');
         } else {
-            // Tablas por falta de movimientos (ahogado)
             statusEl.textContent = "TABLAS - AHOGADO";
         }
     } else {
@@ -335,174 +335,321 @@ function updateUI() {
 // --- 5. IA (aiBrain, evaluateBoard, minimax) ---
 function aiBrain() {
     if (!gameActive) return;
+    if (aiThinking) return; // Ya está pensando
+    aiThinking = true;
 
     const moves = getLegalMoves('B', board);
     if (moves.length === 0) {
         gameActive = false;
         statusEl.textContent = isCheck('B', board) ? "¡JAQUE MATE! GANAS TÚ" : "TABLAS";
         if (isCheck('B', board)) playSound('win');
+        aiThinking = false;
         return;
     }
 
+    // ⚡ DETECCIÓN DE COMPLEJIDAD
+    let hasComplexPosition = false;
+    let whiteQueens = 0;
+    let totalPieces = 0;
+
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = board[r][c];
+            if (piece) totalPieces++;
+            if (piece === 'Q') whiteQueens++;
+            if (piece === 'Q' && r < 2) hasComplexPosition = true;
+        }
+    }
+
+    if (whiteQueens > 1) hasComplexPosition = true;
+    if (moves.length > 40) hasComplexPosition = true;
+
+    // Profundidad adaptativa — mínimo 3 para detectar amenazas de jaque mate
+    let analysisDepth;
+    if (!firstMoveCompleted) {
+        analysisDepth = 2; // Primer movimiento: rápido pero funcional
+    } else if (totalPieces <= 10) {
+        analysisDepth = 4; // Final de partida: profundizar
+    } else if (moves.length > 35) {
+        analysisDepth = 3; // Muchos movimientos en apertura
+    } else if (moves.length > 20) {
+        analysisDepth = 3;
+    } else {
+        analysisDepth = 4; // Pocas piezas → más profundidad
+    }
+
+    console.log(`📊 IA: Profundidad=${analysisDepth} | Piezas=${totalPieces} | Reinas=${whiteQueens} | Movimientos=${moves.length}`);
+
     let bestMove = null;
-    let bestValue = -99999;
-    let evaluatedMoves = 0;
+    let bestValue = -Infinity;
+    evaluationCount = 0; // Reinicia contador
 
-    // ⚡ AGREGA: Timeout de seguridad (máximo 3 segundos pensando)
-    const timeoutId = setTimeout(() => {
-        if (bestMove === null && moves.length > 0) {
-            bestMove = moves[Math.floor(Math.random() * moves.length)];
-            console.log('⚠️ IA: Timeout alcanzado, movimiento aleatorio');
+    // Ordenar movimientos simple: priorizar capturas
+    const sortedMoves = moves.sort((a, b) => {
+        const aCaptures = board[a.tR][a.tC] !== '';
+        const bCaptures = board[b.tR][b.tC] !== '';
+        return (bCaptures === aCaptures) ? 0 : (bCaptures ? 1 : -1);
+    });
+
+    // Limitar número de movimientos a evaluar (más restrictivo en primera jugada)
+    const maxMovesToEvaluate = !firstMoveCompleted ? Math.min(sortedMoves.length, 8) : Math.min(sortedMoves.length, hasComplexPosition ? 25 : 30);
+
+    for (let i = 0; i < maxMovesToEvaluate; i++) {
+        const m = sortedMoves[i];
+        if (evaluationCount > MAX_EVALUATIONS) {
+            console.log('⚠️ IA: Límite global alcanzado');
+            break;
         }
-    }, 3000);
 
-    // MiniMax con pesos posicionales
-    moves.forEach(m => {
-        evaluatedMoves++;
         const tempBoard = makeSimulatedMove(board, m);
-        
-        // ⚡ AGREGA: Si ya evaluó demasiados, salta
-        if (evaluatedMoves > 200) {
-            console.log('⚠️ IA: Límite de evaluaciones alcanzado');
-            return;
-        }
-
-        let score = minimax(2, tempBoard, -Infinity, Infinity, false);
+        // CORRECCIÓN: pasar (board, depth, alpha, beta, isMaximizing)
+        const score = minimax(tempBoard, analysisDepth, -Infinity, Infinity, false);
 
         if (score > bestValue) {
             bestValue = score;
             bestMove = m;
         }
-    });
-
-    clearTimeout(timeoutId); // ⚡ AGREGA: Cancela el timeout si terminó
-
-    // Si aún no hay movimiento, elige uno aleatorio
-    if (!bestMove) {
-        bestMove = moves[Math.floor(Math.random() * moves.length)];
-        console.log('⚠️ IA: Sin mejor movimiento, aleatorio');
     }
 
+    if (!bestMove) {
+        bestMove = moves[0];
+        console.log('⚠️ IA: Movimiento de emergencia');
+    }
+
+    console.log(`✅ IA: Ejecutando ${PIECES_CHAR[board[bestMove.fR][bestMove.fC]]} de ${String.fromCharCode(65 + bestMove.fC)}${8 - bestMove.fR} a ${String.fromCharCode(65 + bestMove.tC)}${8 - bestMove.tR}`);
+
+    aiThinking = false; // ✅ RESET ANTES de executeMove
     executeMove(bestMove.fR, bestMove.fC, bestMove.tR, bestMove.tC, bestMove.special);
-    updateUI();
 }
 
-function minimax(depth, b, alpha, beta, isMaximizing) {
-    if (depth === 0) return evaluateBoard(b);
-
-    const moves = getLegalMoves(isMaximizing ? 'B' : 'W', b);
-    if (moves.length === 0) {
-        // Jaque mate o tablas
-        return isMaximizing ? -9999 : 9999;
+// REEMPLAZO: implementación funcional de minimax con poda alfa-beta
+function minimax(nodeBoard, depth, alpha, beta, isMaximizing) {
+    // Contador de evaluaciones
+    if (evaluationCount > MAX_EVALUATIONS) {
+        return evaluateBoard(nodeBoard);
     }
-    // ⚡ AGREGA: Limita evaluaciones para evitar bucles
-    if (depth < 0 || moves.length > 100) {
-        return evaluateBoard(b);
+
+    if (depth <= 0) {
+        evaluationCount++;
+        return evaluateBoard(nodeBoard);
+    }
+
+    const side = isMaximizing ? 'B' : 'W';
+    const moves = getLegalMoves(side, nodeBoard);
+
+    if (moves.length === 0) {
+        // No hay movimientos: evaluar posición (jaque mate o tablas)
+        evaluationCount++;
+        return evaluateBoard(nodeBoard);
     }
 
     if (isMaximizing) {
-        let bestScore = -Infinity;
-        for (let m of moves) {
-            const tempBoard = makeSimulatedMove(b, m);
-            const score = minimax(depth - 1, tempBoard, alpha, beta, false);
-            bestScore = Math.max(bestScore, score);
-            alpha = Math.max(alpha, score);
-            if (beta <= alpha) break; // Poda Alfa-Beta
-        }
-        return bestScore;
-    } else {
-        let bestScore = Infinity;
-        for (let m of moves) {
-            const tempBoard = makeSimulatedMove(b, m);
-            const score = minimax(depth - 1, tempBoard, alpha, beta, true);
-            bestScore = Math.min(bestScore, score);
-            beta = Math.min(beta, score);
+        let maxEval = -Infinity;
+        for (let move of moves) {
+            const newBoard = makeSimulatedMove(nodeBoard, move);
+            const evalScore = minimax(newBoard, depth - 1, alpha, beta, false);
+            maxEval = Math.max(maxEval, evalScore);
+            alpha = Math.max(alpha, evalScore);
             if (beta <= alpha) break;
+            if (evaluationCount > MAX_EVALUATIONS) break;
         }
-        return bestScore;
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for (let move of moves) {
+            const newBoard = makeSimulatedMove(nodeBoard, move);
+            const evalScore = minimax(newBoard, depth - 1, alpha, beta, true);
+            minEval = Math.min(minEval, evalScore);
+            beta = Math.min(beta, evalScore);
+            if (beta <= alpha) break;
+            if (evaluationCount > MAX_EVALUATIONS) break;
+        }
+        return minEval;
     }
 }
 
+// --- 2. CONTROL DE ESTADO: ¿QUIÉN GANA? ---
+function verificarFinPartida() {
+    const sinMovimientosW = getLegalMoves('W', board).length === 0;
+    const sinMovimientosB = getLegalMoves('B', board).length === 0;
+
+    if (sinMovimientosW) {
+        gameActive = false;
+        statusEl.textContent = isCheck('W', board) ? "¡JAQUE MATE! La IA te ha ganado" : "TABLAS - AHOGADO";
+        return true;
+    }
+    if (sinMovimientosB) {
+        gameActive = false;
+        statusEl.textContent = isCheck('B', board) ? "¡JAQUE MATE! ¡Ganaste!" : "TABLAS - AHOGADO";
+        return true;
+    }
+    return false;
+}
+
+// --- 3. CORRECCIÓN DEL ESTADO "IA PENSANDO" ---
+async function turnoIA() {
+    // Delegamos directamente en aiBrain(), que ya implementa toda la lógica
+    aiBrain();
+}
+
+// ⚡ EVALUACIÓN AVANZADA — material + posición + seguridad del rey + movilidad
 function evaluateBoard(b) {
-    let total = 0;
+    let score = 0;
+
+    // Tablas de posición por pieza (perspectiva negras = positivo)
+    const PAWN_TABLE_B = [
+        [ 0,  0,  0,  0,  0,  0,  0,  0],
+        [50, 50, 50, 50, 50, 50, 50, 50],
+        [10, 10, 20, 30, 30, 20, 10, 10],
+        [ 5,  5, 10, 25, 25, 10,  5,  5],
+        [ 0,  0,  0, 20, 20,  0,  0,  0],
+        [ 5, -5,-10,  0,  0,-10, -5,  5],
+        [ 5, 10, 10,-20,-20, 10, 10,  5],
+        [ 0,  0,  0,  0,  0,  0,  0,  0]
+    ];
+    const KNIGHT_TABLE_B = [
+        [-50,-40,-30,-30,-30,-30,-40,-50],
+        [-40,-20,  0,  0,  0,  0,-20,-40],
+        [-30,  0, 10, 15, 15, 10,  0,-30],
+        [-30,  5, 15, 20, 20, 15,  5,-30],
+        [-30,  0, 15, 20, 20, 15,  0,-30],
+        [-30,  5, 10, 15, 15, 10,  5,-30],
+        [-40,-20,  0,  5,  5,  0,-20,-40],
+        [-50,-40,-30,-30,-30,-30,-40,-50]
+    ];
+    const BISHOP_TABLE_B = [
+        [-20,-10,-10,-10,-10,-10,-10,-20],
+        [-10,  0,  0,  0,  0,  0,  0,-10],
+        [-10,  0,  5, 10, 10,  5,  0,-10],
+        [-10,  5,  5, 10, 10,  5,  5,-10],
+        [-10,  0, 10, 10, 10, 10,  0,-10],
+        [-10, 10, 10, 10, 10, 10, 10,-10],
+        [-10,  5,  0,  0,  0,  0,  5,-10],
+        [-20,-10,-10,-10,-10,-10,-10,-20]
+    ];
+    const KING_TABLE_MG_B = [  // Seguridad del rey en medio juego
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-20,-30,-30,-40,-40,-30,-30,-20],
+        [-10,-20,-20,-20,-20,-20,-20,-10],
+        [ 20, 20,  0,  0,  0,  0, 20, 20],
+        [ 20, 30, 10,  0,  0, 10, 30, 20]
+    ];
+
+    let totalPieces = 0;
+    for (let r = 0; r < 8; r++)
+        for (let c = 0; c < 8; c++)
+            if (b[r][c]) totalPieces++;
+
+    const isEndgame = totalPieces <= 12;
+
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
             const p = b[r][c];
-            if (p) {
-                const val = VALUES[p.toLowerCase()] || 0;
-                const isBlack = p === p.toLowerCase();
-                // Suma posicional
-                const posBonus = POS_WEIGHTS[r][c] * 0.5;
-                total += isBlack ? (val + posBonus) : -(val + posBonus);
+            if (!p) continue;
+
+            const isBlack = p === p.toLowerCase();
+            const type    = p.toLowerCase();
+            const val     = VALUES[type] || 0;
+            const sign    = isBlack ? 1 : -1;
+
+            // Material base
+            score += sign * val;
+
+            // Bonus posicional según tipo
+            let posBonus = 0;
+            if (type === 'p') {
+                posBonus = isBlack ? PAWN_TABLE_B[r][c] : PAWN_TABLE_B[7-r][c];
+            } else if (type === 'n') {
+                posBonus = isBlack ? KNIGHT_TABLE_B[r][c] : KNIGHT_TABLE_B[7-r][c];
+            } else if (type === 'b') {
+                posBonus = isBlack ? BISHOP_TABLE_B[r][c] : BISHOP_TABLE_B[7-r][c];
+            } else if (type === 'k' && !isEndgame) {
+                posBonus = isBlack ? KING_TABLE_MG_B[r][c] : KING_TABLE_MG_B[7-r][c];
             }
+
+            score += sign * posBonus * 0.5;
         }
     }
-    return total;
+
+    // Penalización por jaque al rey de cada bando
+    if (isCheck('W', b)) score += 25;  // bueno para negras
+    if (isCheck('B', b)) score -= 25;  // bueno para blancas
+
+    // Bonus por movilidad (número de movimientos legales)
+    const blackMoves = getLegalMoves('B', b).length;
+    const whiteMoves = getLegalMoves('W', b).length;
+    score += (blackMoves - whiteMoves) * 0.15;
+
+    return score;
 }
 
 // --- 6. INTERFAZ DE USUARIO ---
 function checkPromotion(r, c, color) {
     const isW = color === 'W';
-    if (isPromotionPending(r, c, color)) {
-        if (!isW) {
-            board[r][c] = 'q'; // La IA siempre elige reina
-            turn = "W"
-            updateUI();
-            return;
-        }
-
-        const modal = document.createElement('div');
-        modal.className = 'promotion-modal';
-        const choices = ['Q', 'R', 'B', 'N'];
-
-        choices.forEach(p => {
-            const btn = document.createElement('div');
-            btn.className = 'promo-option';
-            btn.innerHTML = PIECES_CHAR[p];
-            btn.onclick = () => {
-                board[r][c] = p;
-                modal.remove();
-                updateUI();
-                statusEl.textContent = "IA PENSANDO...";
-                setTimeout(aiBrain, 600);
-            };
-            modal.appendChild(btn);
-        });
-        document.body.appendChild(modal);
+    if (!isPromotionPending(r, c, color)) {
+        // Sin promoción: cambiar turno normalmente
+        turn = isW ? 'B' : 'W';
+        currentPlayer = turn;
+        firstMoveCompleted = true;
+        updateUI();
+        if (turn === 'B' && gameActive) setTimeout(() => aiBrain(), 150);
+        return;
     }
+
+    if (!isW) {
+        board[r][c] = 'q'; // La IA siempre elige reina
+        turn = 'W';
+        currentPlayer = 'W';
+        firstMoveCompleted = true;
+        updateUI();
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'promotion-modal';
+    const choices = ['Q', 'R', 'B', 'N'];
+
+    choices.forEach(p => {
+        const btn = document.createElement('div');
+        btn.className = 'promo-option';
+        btn.innerHTML = PIECES_CHAR[p];
+        btn.onclick = () => {
+            board[r][c] = p;
+            modal.remove();
+            turn = 'B';
+            currentPlayer = 'B';
+            firstMoveCompleted = true;
+            updateUI();
+            statusEl.textContent = "IA PENSANDO...";
+            setTimeout(aiBrain, 500);
+        };
+        modal.appendChild(btn);
+    });
+    document.body.appendChild(modal);
+}
+
+function verificarJaqueMate() {
+    const movimientos = getLegalMoves(currentPlayer, board);
+    const enJaque = isCheck(currentPlayer, board);
+
+    if (enJaque && movimientos.length === 0) {
+        gameActive = false;
+        const ganador = currentPlayer === 'W' ? "¡NEGRAS GANAN!" : "¡BLANCAS GANAN!";
+        statusEl.textContent = ganador;
+        playSound('win');
+        return true;
+    }
+    return false;
 }
 
 function isPromotionPending(r, c, color) {
     return (color === 'W' && r === 0) || (color === 'B' && r === 7);
 }
 
-// --- 7. GESTIÓN DEL TIEMPO ---
-
-function startTimers() {
-    setInterval(() => {
-        if (!gameActive || !gameStarted) return;
-        if (turn === 'W') {
-            timerW--;
-            updateTimerDisplay('W', timerW);
-        } else {
-            timerB--;
-            updateTimerDisplay('B', timerB);
-        }
-        if (timerW <= 0 || timerB <= 0) {
-            gameActive = false;
-            statusEl.textContent = "¡FIN DEL TIEMPO!";
-        }
-    }, 1000);
-}
-
-function updateTimerDisplay(player, time) {
-    const mins = Math.floor(time / 60);
-    const secs = time % 60;
-    const format = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    if (player === 'W') timerWEl.textContent = `Blancas: ${format}`;
-    else timerBEl.textContent = `IA: ${format}`;
-}
-
+// sonidos del juego
 function playSound(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
