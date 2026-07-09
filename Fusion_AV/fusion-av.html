@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONSOLA // Fusión A/V</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" >
+</head>
+<body>
+<div class="frame">
+
+  <div class="header">
+    <div>
+      <div class="eyebrow">HERRAMIENTA LOCAL &mdash; SIN SERVIDOR</div>
+      <h1>FUSIÓN <span>A/V</span></h1>
+    </div>
+    <div class="status-chip"><span class="dot" id="engineDot"></span><span id="engineStatus">MOTOR: INACTIVO</span></div>
+  </div>
+
+  <div class="rack">
+    <div class="channel video">
+      <div class="channel-label"><span>CANAL 01 · VIDEO</span><span class="tag">MP4/WEBM/MOV</span></div>
+      <div class="dropzone" id="dzVideo">
+        <span class="icon">▶</span>
+        <div class="hint">Arrastra el video aquí o haz clic para cargarlo</div>
+        <input type="file" id="videoInput" accept="video/*">
+      </div>
+      <div class="file-meta" id="videoMeta"></div>
+      <video id="previewVideo" style="display:none;width:100%;margin-top:10px;border-radius:4px;border:1px solid var(--line);"></video>
+    </div>
+
+    <div class="channel audio">
+      <div class="channel-label"><span>CANAL 02 · AUDIO</span><span class="tag">MP3/WAV/AAC</span></div>
+      <div class="dropzone" id="dzAudio">
+        <span class="icon">♫</span>
+        <div class="hint">Arrastra el audio aquí o haz clic para cargarlo</div>
+        <input type="file" id="audioInput" accept="audio/*">
+      </div>
+      <div class="file-meta" id="audioMeta"></div>
+      <canvas class="wave" id="waveCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="sync-strip" id="syncStrip">
+    <span>DURACIÓN VIDEO: <strong id="durVideo">--:--</strong></span>
+    <span>DURACIÓN AUDIO: <strong id="durAudio">--:--</strong></span>
+    <span>AJUSTE: <strong id="syncMode">esperando archivos…</strong></span>
+  </div>
+
+  <div class="action-row">
+    <button class="primary" id="mergeBtn" disabled>▶ FUSIONAR PISTAS</button>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
+    <button class="ghost" id="resetBtn">REINICIAR</button>
+  </div>
+
+  <div class="console" id="consoleLog"></div>
+
+  <div class="output" id="outputPanel">
+    <video id="previewOut" controls></video>
+    <div class="info">
+      <div><b>Listo.</b> Audio y video fusionados y sincronizados en duración.</div>
+      <div id="outMeta" style="margin-top:6px;"></div>
+    </div>
+    <a class="download-btn" id="downloadBtn" download="fusion.mp4">⬇ DESCARGAR MP4</a>
+  </div>
+
+  <footer>TODO EL PROCESO OCURRE EN TU NAVEGADOR · NINGÚN ARCHIVO SE SUBE A UN SERVIDOR</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+<script src="fusion.js">
+</script>
+</body>
+</html>
