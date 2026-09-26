@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Tabla Periódica - Bio-Digital Edition</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body background-image: url('../ima/andromeda.png');>
+
+	<h1>Tabla Periódica de los Elementos</h1>
+	<div class="table-container">
+		<div class="periodic-table" id="table"></div>
+	</div>
+
+	<script src="datos.js"></script>
+	<script>
+
+		const container = document.getElementById('table');
+
+		// La lógica de renderizado permanece igual, pero ahora es más limpia
+		elements.forEach(el => {
+			const card = document.createElement(el.url ? 'a' : 'div');
+
+			if (el.url) {
+				card.href = el.url;
+				card.target = "_blank";
+			}
+
+			card.className = `element ${el.cat}`;
+			card.style.gridColumn = el.col;
+			card.style.gridRow = el.row;
+
+			card.innerHTML = `
+ 	           <div class="number">${el.n}</div>
+		       <dev class="symbol">${el.s}</div>
+     		   <div class="name">${el.name}</div>
+    	           <div class="details">
+                       Masa: ${el.mass}<br>
+         	       EN: ${el.en}<br>
+     		       E. Ion: ${el.ei} eV<br>
+                       Ox: ${el.ox}
+          	  </div>
+       	       `;
+			container.appendChild(card);
+		});
+	</script>
+</body>
+
+</html>

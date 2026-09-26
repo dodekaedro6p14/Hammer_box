@@ -1,0 +1,213 @@
+:root {
+    --primary: #2c3e50;
+    --secondary: #818cf8;
+    --accent: #e74c3c;
+    --bg-color: #0f172a;
+    --text: #333;
+    --white: #ffffff;
+    --black: #1e293b;
+    --color-fuente: #fff;
+    --color_fondo: #000;
+    --card-bg: #161b22;
+    --text-color: #c9d1d9;
+    --accent-color: #00f0ff;
+    --energy-color: #f9e231;
+    --border-color: #30363d;
+    --footer-color: #8b949e;
+
+    /* Colores por Categoría */
+    --alcalinos: #ff7b72;
+    --alcalinoterreos: #ffa657;
+    --transicion: #d2a8ff;
+    --otros-metales: #7ee787;
+    --no-metales: #58a6ff;
+    --halogenos: #ffea7f;
+    --gases-nobles: #ff78cb;
+    --lantanidos: #7afaff;
+    --actinidos: #ff9bce;
+    --o_metales: #40ff00;
+    --metaloides: #ff0000;
+    --ele_desconocidos: #595959;
+}
+
+body, html {
+   /*background-color: var(--bg-color);*/
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+    white-space: nowrap;
+    background-image: url(../../ima/brack_graund.jpg);
+}
+
+h1 {
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+    margin: 0;
+    /*    margin-bottom: 30px;*/
+}
+
+.table-container {
+    white-space: nowrap;
+    width: 100%;
+    /*95vw*/
+    overflow-y: hidden;
+    padding: 70px;
+    /*20px*/
+}
+
+.periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    /* 18 columnas para la tabla */
+    grid-template-rows: repeat(12, auto);
+    gap: 5px;
+    padding: 20px;
+    min-width: 1100px;
+}
+
+.element {
+    background-color: rgba(0, 0, 0, 0.5);  /*var(--card-bg)*/
+    border: 1px solid var(--border-color);
+    padding: 5px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+    min-height: 85px;
+    font-size: 0.65rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.element:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px var(--accent-color), inset 0 0 5px var(--accent-color);
+}
+
+/* Clases de Colores */
+.alcalino {
+    color: var(--alcalinos);
+    border-top: 3px solid var(--alcalinos);
+}
+
+.alcalinoterreo {
+    color: var(--alcalinoterreos);
+    border-top: 3px solid var(--alcalinoterreos);
+}
+
+.transicion {
+    color: var(--transicion);
+    border-top: 3px solid var(--transicion);
+}
+
+.no-metal {
+    color: var(--no-metales);
+    border-top: 3px solid var(--no-metales);
+}
+
+.halogeno {
+    color: var(--halogenos);
+    border-top: 3px solid var(--halogenos);
+}
+
+.noble {
+    color: var(--gases-nobles);
+    border-top: 3px solid var(--gases-nobles);
+}
+
+.lantanido {
+    color: var(--lantanidos);
+    border-top: 3px solid var(--lantanidos);
+}
+
+.actinido {
+    color: var(--actinidos);
+    border-top: 3px solid var(--actinidos);
+}
+
+.otros-metales {
+    color: var(--o_metales);
+    border-top: 3px solid var(--o_metales);
+}
+
+.metaloides {
+    color: var(--metaloides);
+    border-top: 3px solid var(--metaloides);
+}
+
+.ele_desconocidos {
+    color: var(--ele_desconocidos);
+    border-top: 3px solid var(--ele_desconocidos);
+}
+
+/* Ubicación*/
+.number {
+    font-size: 0.7rem;
+    align-self: flex-start;
+    opacity: 0.8;
+}
+
+.symbol {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin: 2px 0;
+}
+
+.name {
+    font-size: 0.6rem;
+    text-align: center;
+}
+
+.mass {
+    color: var(--secondary);
+    font-size: 0.6rem;
+}
+
+.details {
+    display: none;
+    position: absolute;
+    background: var(--black);
+    border: 1px solid var(--accent-color);
+    padding: 5px;
+    /* aire al texto*/
+    border-radius: 4px;
+    /* --- Botones para centrar */
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 130px;
+    z-index: 20;
+    font-size: 0.7rem;
+    color: var(--white);
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.element:hover .details {
+    display: block;
+}
+
+.info-label {
+    color: var(--footer-color);
+}
+
+.info-val {
+    color: var(--energy-color);
+    font-weight: bold;
+}
+
+/* Espaciador para Lantánidos y Actínidos */
+.spacer {
+    grid-row: 8;
+    height: 30px;
+}
