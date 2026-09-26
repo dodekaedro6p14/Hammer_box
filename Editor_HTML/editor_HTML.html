@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prima Multi-Language Pro Editor</title>
+
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+
+    <style>
+        /* --- ESTILOS PROFESIONALES PREDETERMINADOS --- */
+        :root { 
+            --bg: #1e1e1e; 
+            --fg: #d4d4d4; 
+            --accent: #58a6ff; 
+            --border: #30363d; 
+            --header-bg: #161b22;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+
+        /* Barra de herramientas superior */
+        .toolbar { 
+            background: var(--header-bg); 
+            padding: 12px 20px; 
+            display: flex; 
+            gap: 15px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        .toolbar input, select, button { 
+            background: #0d1117; 
+            color: white; 
+            border: 1px solid var(--border); 
+            padding: 8px 15px; 
+            border-radius: 6px; 
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .toolbar select { cursor: pointer; }
+        .toolbar input:focus, select:focus { border-color: var(--accent); }
+        
+        button { cursor: pointer; font-weight: bold; transition: all 0.2s ease;}
+        button:hover { background: var(--border); }
+        
+        #btn-run { background: #238636; border-color: #2ea043; color: white; }
+        #btn-run:hover { background: #2ea043; box-shadow: 0 0 10px rgba(46, 160, 67, 0.4); }
+
+        /* Estructura de paneles divididos */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* Panel Izquierdo: Editor */
+        .editor-section { flex: 1; display: flex; flex-direction: column; border-right: 2px solid var(--border); }
+        .CodeMirror { flex: 1; font-size: 16px; font-family: 'Consolas', 'Courier New', monospace; height: 100%; }
+
+        /* Panel Derecho: Consola / Navegador */
+        .output-section { flex: 1; display: flex; flex-direction: column; background: #0d1117; }
+        .output-header { background: var(--header-bg); padding: 8px 15px; font-size: 12px; color: #8b949e; border-bottom: 1px solid var(--border); letter-spacing: 1px; font-weight: bold;}
+        
+        /* Contenedor para texto (Python/Txt) */
+        #output-console { flex: 1; padding: 15px; overflow-y: auto; font-family: 'Consolas', monospace; white-space: pre-wrap; color: #a5d6ff; font-size: 15px;}
+        /* Contenedor para Web (HTML/CSS/JS) */
+        #output-iframe { flex: 1; width: 100%; height: 100%; border: none; background: white; display: none; }
+        
+        .error-text { color: #ff7b72 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button id="btn-run" title="Ejecutar código (Ctrl+Enter)">▶ Ejecutar</button>
+        <input type="text" id="filename" placeholder="nombre_archivo" value="index">
+        <select id="format-select">
+            <option value="py">.py (Python)</option>
+            <option value="html" selected>.html (HTML5)</option>
+            <option value="css">.css (Estilos)</option>
+            <option value="js">.js (JavaScript)</option>
+            <option value="txt">.txt (Texto Plano)</option>
+        </select>
+        <button id="btn-download">⬇ Descargar</button>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-section">
+            <textarea id="code-editor">
+<h1>Hola Mundo</h1>
+<p>Este es tu nuevo editor multilingüe profesional.</p>
+<style>
+    h1 { color: #007acc; font-family: sans-serif; }
+    p { color: #333; }
+</style>
+<script>
+    console.log("Sistema web cargado correctamente.");
+</script>
+            </textarea>
+        </div>
+        
+        <div class="output-section">
+            <div class="output-header" id="output-title">VISOR WEB INTEGRADO</div>
+            <div id="output-console">Esperando ejecución...</div>
+            <iframe id="output-iframe"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 1. Inicializar el Editor CodeMirror
+        window.editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+            mode: "htmlmixed",       // Inicia en modo HTML por defecto
+            theme: "monokai",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            matchBrackets: true,
+            extraKeys: {
+                "Tab": function(cm) { cm.replaceSelection("    ", "end"); },
+                "Ctrl-Enter": function(cm) { document.getElementById('btn-run').click(); }
+            }
+        });
+
+        const formatSelect = document.getElementById('format-select');
+        const outputConsole = document.getElementById('output-console');
+        const outputIframe = document.getElementById('output-iframe');
+        const outputTitle = document.getElementById('output-title');
+
+        // 2. Cambiar el color de sintaxis según la extensión seleccionada
+        formatSelect.addEventListener('change', (e) => {
+            const ext = e.target.value;
+            let newMode = "text/plain";
+
+            if (ext === 'py') newMode = "python";
+            else if (ext === 'css') newMode = "css";
+            else if (ext === 'js') newMode = "javascript";
+            else if (ext === 'html') newMode = "htmlmixed";
+
+            window.editor.setOption("mode", newMode);
+        });
+
+        // 3. Lógica del Botón "Ejecutar" (El Cerebro Inteligente)
+        document.getElementById("btn-run").addEventListener('click', () => {
+            const ext = formatSelect.value;
+            const code = window.editor.getValue();
+
+            if (ext === 'py') {
+                // Modo Consola Python
+                outputConsole.style.display = 'block';
+                outputIframe.style.display = 'none';
+                outputTitle.innerText = "CONSOLA DE PYTHON (PYSCRIPT)";
+                
+                // Disparamos un evento personalizado que Python escuchará
+                document.dispatchEvent(new Event('run-python'));
+                
+            } else if (ext === 'html' || ext === 'css' || ext === 'js') {
+                // Modo Navegador Web
+                outputConsole.style.display = 'none';
+                outputIframe.style.display = 'block';
+                outputTitle.innerText = "VISOR WEB INTEGRADO";
+                
+                // Si es solo CSS o JS, lo envolvemos en HTML básico para renderizarlo
+                let renderCode = code;
+                if (ext === 'css') renderCode = `<style>${code}</style><div style="font-family:sans-serif; padding:20px;">Estilos aplicados. Escribe HTML aquí si deseas ver elementos.</div>`;
+                if (ext === 'js') renderCode = `<script>${code}<\/script><div style="font-family:sans-serif; padding:20px;">Script ejecutado (Revisa la consola del navegador real).</div>`;
+
+                // Creamos un Blob para inyectarlo en el iframe sin necesidad de servidor
+                const blob = new Blob([renderCode], {type: 'text/html'});
+                outputIframe.src = URL.createObjectURL(blob);
+                
+            } else {
+                // Modo Texto
+                outputConsole.style.display = 'block';
+                outputIframe.style.display = 'none';
+                outputTitle.innerText = "VISOR DE TEXTO";
+                outputConsole.innerText = "El formato .txt es solo lectura. No hay código ejecutable.";
+                outputConsole.className = "";
+            }
+        });
+
+        // 4. Descargar Archivo Universal
+        document.getElementById("btn-download").addEventListener('click', () => {
+            const code = window.editor.getValue();
+            const filename = document.getElementById("filename").value || "archivo";
+            const ext = formatSelect.value;
+            
+            const blob = new Blob([code], {type: "text/plain"});
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${filename}.${ext}`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+
+    <script type="py">
+        import sys
+        import io
+        from js import document, window
+        from pyodide.ffi import create_proxy
+
+        console_div = document.getElementById("output-console")
+
+        def execute_python_code(event):
+            # Limpiamos la consola
+            console_div.innerHTML = ""
+            console_div.className = "" 
+            
+            code = window.editor.getValue()
+            
+            # Secuestramos la salida estándar (print)
+            captured_output = io.StringIO()
+            sys.stdout = captured_output
+            sys.stderr = captured_output 
+            
+            try:
+                exec(code, {})
+                console_div.innerText = captured_output.getvalue()
+            except Exception as e:
+                import traceback
+                console_div.innerText = traceback.format_exc()
+                console_div.className = "error-text"
+            finally:
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
+
+        # Escuchamos el evento disparado por JavaScript
+        document.addEventListener('run-python', create_proxy(execute_python_code))
+    </script>
+
+</body>
+</html>
