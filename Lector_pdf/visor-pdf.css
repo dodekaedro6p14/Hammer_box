@@ -1,53 +1,53 @@
     :root {
-        --bg: #f5f3ee;
+        --bg: #14011e; /*#f5f3ee*/
         --surface: #ffffff;
         --toolbar: #1a1a1a;
-        --toolbar-text: #ffff80;
+        --toolbar-text: #40ff00; /*#ffff80*/
         --toolbar-border: #333;
         --btn-bg: #2a2a2a;
         --btn-hover: #3a3a3a;
         --btn-active: #c8a96e;
         --btn-text: #e8e4dc;
-        --accent: #c8a96e;
+        --accent: #40ff00; /*#c8a96e*/
         --accent-dark: #a8893e;
         --page-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
         --page-bg: #ffffff;
         --text: #1a1a1a;
         --text-muted: #888;
-        --drop-border: #c8a96e;
+        --drop-border: #0d3300; /*#c8a96e*/
         --drop-bg: rgba(200, 169, 110, 0.07);
         --scrollbar-thumb: #c8a96e;
         --scrollbar-track: #e8e4dc;
         --input-bg: #2a2a2a;
         --input-text: #f0ede6;
         --badge-bg: rgba(200, 169, 110, 0.18);
-        --badge-text: #7a5c1e;
+        --badge-text: #40ff00; /*#7a5c1e*/
     }
 
     [data-theme="dark"] {
         --bg: #141414;
         --surface: #1e1e1e;
         --toolbar: #111111;
-        --toolbar-text: #ffff80;
+        --toolbar-text: #ff00bf; /*#ffff80*/
         --toolbar-border: #2a2a2a;
         --btn-bg: #252525;
         --btn-hover: #303030;
         --btn-active: #c8a96e;
         --btn-text: #e8e4dc;
-        --accent: #c8a96e;
+        --accent: #ff00bf; /*#c8a96e*/
         --accent-dark: #80ff00 ;/*#a8893e;*/
         --page-shadow: 0 6px 32px rgba(0, 0, 0, 0.5);
         --page-bg: #ffffff;
         --text: #80ff00; /*e8e4dc*/
         --text-muted: #666;
-        --drop-border: #c8a96e;
+        --drop-border: #330026; /*#c8a96e*/
         --drop-bg: rgba(200, 169, 110, 0.06);
         --scrollbar-thumb: #444;
         --scrollbar-track: #1e1e1e;
         --input-bg: #1a1a1a;
         --input-text: #e8e4dc;
         --badge-bg: rgba(200, 169, 110, 0.12);
-        --badge-text: #c8a96e;
+        --badge-text: #ff00bf; /*#c8a96e*/
     }
 
     * {
@@ -253,7 +253,7 @@
     .drop-title {
         font-size: 18px;
         font-family: 'Georgia', serif;
-        color: var(--text);
+        color: var(--text-muted);  /*var(--text)*/
         text-align: center;
     }
 
@@ -472,4 +472,99 @@
 
     #scroll-container:not(.instant) {
         scroll-behavior: smooth;
+    }
+
+/* ── BUSCADOR DE TEXTO ── */
+    #search-bar {
+        position: fixed;
+        top: 60px;
+        right: 16px;
+        background: var(--toolbar);
+        border: 1px solid var(--toolbar-border);
+        border-radius: 8px;
+        padding: 6px 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        z-index: 15;
+        transform: translateY(-8px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    #search-bar.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #search-input {
+        background: var(--input-bg);
+        color: var(--input-text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-family: 'Georgia', serif;
+        width: 180px;
+        outline: none;
+    }
+
+    #search-input:focus {
+        outline: 1px solid var(--accent);
+    }
+
+    #search-count {
+        font-size: 11px;
+        font-family: monospace;
+        color: var(--toolbar-text);
+        opacity: 0.65;
+        min-width: 42px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    #search-bar button {
+        background: var(--btn-bg);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        color: var(--btn-text);
+        width: 28px;
+        height: 28px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    #search-bar button:hover {
+        background: var(--btn-hover);
+    }
+
+    #search-bar button:active {
+        background: var(--btn-active);
+        color: #111;
+    }
+
+    #btn-search.active {
+        background: var(--accent);
+        color: #111;
+        border-color: var(--accent-dark);
+    }
+
+    /* ── RESALTADO DE COINCIDENCIAS ── */
+    .text-highlight {
+        position: absolute;
+        background: rgba(255, 210, 0, 0.38);
+        border-radius: 2px;
+        pointer-events: none;
+    }
+
+    .text-highlight.active {
+        background: rgba(255, 140, 0, 0.6);
+        outline: 2px solid var(--accent);
     }

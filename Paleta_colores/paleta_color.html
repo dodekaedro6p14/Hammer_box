@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prisma Chromatic Selector</title>
+    <link rel="stylesheet" href="paleta_color.css">
+</head>
+<body  background-image: url(../../ima/brack_graund.jpg);>
+    <div class="main-container">
+        <header>
+            <h1>PRISMA CHROMATIC SELECTOR</h1>
+            <div class="header-controls">
+                <div class="size-control">
+                    <label for="circleSize">Tamaño del círculo:</label>
+                    <input type="range" id="circleSize" min="150" max="550" value="350">
+                </div>
+                <div class="bg-control">
+                    <label for="bgImage">Fondo del área del círculo:</label>
+                    <input type="file" id="bgImage" accept="image/*">
+                    <button id="resetBg" type="button">Restablecer</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section class="wheel-section" id="wheelSection">
+                <div class="wheel-stage">
+                    <div id="colorWheel" class="canvas-wheel"></div>
+
+                    <div class="neon-strip">
+                        <span class="neon-label">Colores neón</span>
+                        <div id="neonPalette" class="neon-palette"></div>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="details-sidebar" id="sidebar">
+                <h2>Detalles del Color</h2>
+                <div id="selectedInfo" class="selected-info">
+                    <p>Selecciona un color del arcoíris o un neón</p>
+                </div>
+                <div id="paletteContainer" class="palette-grid"></div>
+            </aside>
+        </main>
+    </div>
+    <script src="paleta_color.js"></script>
+</body>
+</html>

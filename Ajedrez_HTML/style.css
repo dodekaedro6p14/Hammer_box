@@ -9,16 +9,16 @@
     --accent-color: #58a6ff;
     --energy-color: #f9e231;
     --border-color: #30363d;
-    --side-color: rgba(26,26,26,0.5);
+    --side-color: rgba(26,26,26,0.1);
     --texto-color: #40ff00;
 
     /* Tablero*/
-    --tab-oscuro: #0d0033;
+    --tab-oscuro: rgba(26,26,26,0.1);  /*#0d0033*/
 
     /* CONFIGURACIÓN DE COLORES DE PIEZAS (EDITAR AQUÍ) */
-    --color-piezas-blancas: #ff00bf;
+    --color-piezas-blancas: #ff0000;
     /* Puedes cambiar este Hexadecimal */
-    --color-piezas-negras: #006633;
+    --color-piezas-negras: #0000ff; /* 006633 */
     /* Puedes cambiar este Hexadecimal */
 }
 
@@ -64,7 +64,7 @@ p{
         "numbers-left board numbers-right"
         ". letters-bottom .";
     gap: 5px;
-    background: var(--card-bg);
+    background: var(--side-color);
     padding: 10px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -75,9 +75,9 @@ p{
     grid-template-columns: repeat(8, 60px);
     grid-template-rows: repeat(8, 60px);
     grid-area: board;
-    border: 10px solid var(--border-color);
+    border: 10px solid var(--side-color);
     /*var(--primari)*/
-    box-shadow: 0 0 40px rgba(121, 77, 255, 0.6);
+    box-shadow: 0 0 40px rgba(121, 77, 255, 0.1);
     /*0,0,0*/
 }
 
@@ -111,7 +111,7 @@ p{
 
 /*d1d5db*/
 .black-sq {
-    background-color: var(--tab-oscuro);
+    background-color: var(--side-color);  /* var (--tab-oscur0)*/
 }
 
 /* Clases aplicadas a las piezas según el color configurado en CSS */

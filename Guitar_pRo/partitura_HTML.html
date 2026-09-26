@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Partituras - Gorgoroth</title>
+
+    <!-- CORREGIDO: el paquete correcto en npm/jsDelivr es @coderline/alphatab, no @alphatab/alphatab -->
+    <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+    <header>
+        <h1>Visor Web de Tablaturas</h1>
+        <p>Arrastra tu archivo .gp2, .gp3, .gp4, .gp5 o .gpx para renderizar la partitura</p>
+    </header>
+
+    <div class="upload-container" id="drop-zone">
+        <label for="file-input" class="btn-cargar">Seleccionar Archivo</label>
+        <input type="file" id="file-input" accept=".gp2,.gp3,.gp4,.gp5,.gpx,.gp">
+        <p style="margin-top: 10px; font-size: 14px;">O suelta el archivo directamente en este recuadro</p>
+    </div>
+
+    <div id="mensaje-cargando">Cargando partitura, por favor espera...</div>
+    <div id="mensaje-error"></div>
+
+    <div id="contenedor-partitura">
+        <div class="controles">
+            <button class="btn-control" id="btn-play">▶ Reproducir</button>
+            <button class="btn-control" id="btn-pause">⏸ Pausa</button>
+            <button class="btn-control" id="btn-stop">⏹ Detener</button>
+            <button class="btn-control" id="btn-pdf">📄 Descargar PDF</button>
+            <button class="btn-control" id="btn-nuevo">📂 Cargar otro archivo</button>
+            <span id="nombre-archivo"></span>
+        </div>
+
+        <div id="selector-instrumentos">
+            <span class="selector-titulo">Instrumentos:</span>
+            <div id="lista-instrumentos"></div>
+        </div>
+
+        <div id="progreso-container">
+            <span id="tiempo-actual">0:00</span>
+            <div id="progreso-barra">
+                <div id="progreso-relleno"></div>
+            </div>
+            <span id="tiempo-total">0:00</span>
+        </div>
+
+        <div id="alphaTab"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const contenedorPartitura = document.getElementById('contenedor-partitura');
+        const mensajeError = document.getElementById('mensaje-error');
+        const mensajeCargando = document.getElementById('mensaje-cargando');
+        const nombreArchivo = document.getElementById('nombre-archivo');
+        const listaInstrumentos = document.getElementById('lista-instrumentos');
+        const progresoRelleno = document.getElementById('progreso-relleno');
+        const tiempoActual = document.getElementById('tiempo-actual');
+        const tiempoTotal = document.getElementById('tiempo-total');
+
+        // Convierte milisegundos a formato m:ss para mostrar el tiempo de reproducción
+        function formatearTiempo(ms) {
+            const totalSegundos = Math.floor(ms / 1000);
+            const minutos = Math.floor(totalSegundos / 60);
+            const segundos = totalSegundos % 60;
+            return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+        }
+
+        function mostrarError(texto) {
+            mensajeCargando.style.display = 'none';
+            mensajeError.textContent = texto;
+            mensajeError.style.display = 'block';
+        }
+
+        function ocultarError() {
+            mensajeError.style.display = 'none';
+        }
+
+        // Comprobamos que la librería se haya cargado correctamente desde el CDN
+        if (typeof alphaTab === 'undefined') {
+            mostrarError('No se pudo cargar la librería alphaTab desde el CDN. Comprueba tu conexión a internet o si algún bloqueador de contenido está interfiriendo.');
+        } else {
+
+            const apiAlphaTab = new alphaTab.AlphaTabApi(document.getElementById('alphaTab'), {
+                core: {
+                    // Aseguramos que alphaTab encuentre sus propios recursos (fuentes) desde el CDN.
+                    fontDirectory: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/font/',
+                    // CLAVE: cuando el script se sirve desde un CDN externo (cross-origin),
+                    // el Web Worker que usa alphaTab por defecto para renderizar puede
+                    // quedarse colgado sin lanzar ningún error en varios navegadores.
+                    // Desactivarlo fuerza un renderizado síncrono, fiable en este escenario.
+                    useWorkers: false
+                },
+                display: {
+                    layoutMode: 'page',
+                    scale: 1.0
+                },
+                player: {
+                    enablePlayer: true,
+                    enableCursor: true,
+                    // Anima el cursor de nota suavemente en vez de saltar de golpe,
+                    // para que se perciba con claridad en qué nota va la reproducción.
+                    enableAnimatedBeatCursor: true,
+                    // Desplaza automáticamente la vista para seguir la reproducción.
+                    scrollMode: 'continuous',
+                    // El player de audio sí necesita su propio worker interno; eso no
+                    // afecta al renderizado de la partitura, así que lo dejamos activo.
+                    soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2'
+                }
+            });
+
+            // Salvaguarda: si por cualquier motivo la carga se queda colgada más de
+            // 20 segundos sin error ni éxito, avisamos en vez de dejarlo en silencio.
+            let timeoutCarga = null;
+            function iniciarTimeoutCarga() {
+                clearTimeout(timeoutCarga);
+                timeoutCarga = setTimeout(() => {
+                    if (mensajeCargando.style.display === 'block') {
+                        mostrarError('La partitura está tardando demasiado en cargar. Prueba a recargar la página o a abrir este archivo HTML mediante un servidor local (por ejemplo, con la extensión "Live Server" de VS Code) en lugar de abrirlo con doble clic.');
+                    }
+                }, 20000);
+            }
+            function detenerTimeoutCarga() {
+                clearTimeout(timeoutCarga);
+            }
+
+            // Eventos de ciclo de vida para dar feedback real al usuario
+            apiAlphaTab.error.on((error) => {
+                console.error('Error de alphaTab:', error);
+                detenerTimeoutCarga();
+                mostrarError('No se pudo leer este archivo. Verifica que sea un Guitar Pro válido (.gp2, .gp3, .gp4, .gp5, .gpx).');
+                dropZone.style.display = 'block';
+                contenedorPartitura.style.display = 'none';
+            });
+
+            apiAlphaTab.renderStarted.on(() => {
+                mensajeCargando.style.display = 'block';
+                iniciarTimeoutCarga();
+            });
+
+            apiAlphaTab.renderFinished.on(() => {
+                mensajeCargando.style.display = 'none';
+                detenerTimeoutCarga();
+            });
+
+            apiAlphaTab.scoreLoaded.on((score) => {
+                ocultarError();
+                dropZone.style.display = 'none';
+                contenedorPartitura.style.display = 'block';
+                nombreArchivo.textContent = score.title ? `🎵 ${score.title}` : '';
+                construirSelectorInstrumentos(score.tracks);
+                progresoRelleno.style.width = '0%';
+                tiempoActual.textContent = '0:00';
+                tiempoTotal.textContent = '0:00';
+            });
+
+            // Actualiza la barra de progreso y el contador de tiempo en cada tick
+            // de la reproducción, sincronizado con el cursor que se mueve sobre las notas.
+            apiAlphaTab.playerPositionChanged.on((e) => {
+                tiempoActual.textContent = formatearTiempo(e.currentTime);
+                tiempoTotal.textContent = formatearTiempo(e.endTime);
+                const porcentaje = e.endTime > 0 ? (e.currentTime / e.endTime) * 100 : 0;
+                progresoRelleno.style.width = `${porcentaje}%`;
+            });
+
+            // ---- Selector de instrumentos ----
+            let pistasVisibles = [];
+
+            function construirSelectorInstrumentos(tracks) {
+                listaInstrumentos.innerHTML = '';
+                pistasVisibles = [...tracks]; // todas visibles por defecto
+
+                tracks.forEach((track) => {
+                    const boton = document.createElement('button');
+                    boton.className = 'instrumento-btn activo';
+                    boton.type = 'button';
+                    boton.textContent = track.name && track.name.length > 0
+                        ? track.name
+                        : `Pista ${track.index + 1}`;
+
+                    boton.addEventListener('click', () => {
+                        const yaVisible = pistasVisibles.some(t => t.index === track.index);
+                        if (yaVisible) {
+                            // Evitamos quedarnos sin ninguna pista visible
+                            if (pistasVisibles.length === 1) return;
+                            pistasVisibles = pistasVisibles.filter(t => t.index !== track.index);
+                            boton.classList.remove('activo');
+                        } else {
+                            pistasVisibles.push(track);
+                            boton.classList.add('activo');
+                        }
+                        apiAlphaTab.renderTracks(pistasVisibles);
+                    });
+
+                    listaInstrumentos.appendChild(boton);
+                });
+            }
+
+            fileInput.addEventListener('change', (e) => {
+                const archivo = e.target.files[0];
+                if (archivo) procesarArchivoGP(archivo);
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragging');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragging');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragging');
+                const archivo = e.dataTransfer.files[0];
+                if (archivo) procesarArchivoGP(archivo);
+            });
+
+            function procesarArchivoGP(archivo) {
+                ocultarError();
+                mensajeCargando.style.display = 'block';
+                iniciarTimeoutCarga();
+
+                const lector = new FileReader();
+                lector.onload = function (evento) {
+                    try {
+                        const datosBinarios = new Uint8Array(evento.target.result);
+                        apiAlphaTab.load(datosBinarios);
+                    } catch (err) {
+                        console.error(err);
+                        mostrarError('Ocurrió un error al procesar el archivo. Intenta con otro archivo Guitar Pro.');
+                    }
+                };
+                lector.onerror = function () {
+                    mostrarError('No se pudo leer el archivo seleccionado.');
+                };
+                lector.readAsArrayBuffer(archivo);
+            }
+
+            document.getElementById('btn-play').addEventListener('click', () => apiAlphaTab.playPause());
+            document.getElementById('btn-pause').addEventListener('click', () => apiAlphaTab.pause());
+            document.getElementById('btn-stop').addEventListener('click', () => apiAlphaTab.stop());
+
+            // Abre el diálogo de impresión del navegador con la partitura ya formateada;
+            // desde ahí el usuario elige "Guardar como PDF" como destino de impresión.
+            document.getElementById('btn-pdf').addEventListener('click', () => apiAlphaTab.print());
+
+            document.getElementById('btn-nuevo').addEventListener('click', () => {
+                contenedorPartitura.style.display = 'none';
+                dropZone.style.display = 'block';
+                fileInput.value = '';
+                listaInstrumentos.innerHTML = '';
+                progresoRelleno.style.width = '0%';
+                tiempoActual.textContent = '0:00';
+                tiempoTotal.textContent = '0:00';
+            });
+        }
+    </script>
+</body>
+</html>

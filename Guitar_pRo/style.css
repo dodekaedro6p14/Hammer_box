@@ -1,0 +1,146 @@
+
+:root {
+    --primary: #2c3e50;
+    --secondary: #818cf8;
+    --accent: #e74c3c;
+    --bg-color: #0f172a;
+    --text: #333;
+    --white: #ffffff;
+    --black: #1e293b;
+    --color-fuente: #fff;
+    --color_fondo: #000;
+    --card-bg: #161b22;
+    --text-color: #c9d1d9;
+    --accent-color: #58a6ff;
+    --energy-color: #f9e231;
+    --border-color: #30363d;
+    --footer-color: #8b949e;
+    --error-color: #f87171;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--white);
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: var(--footer-color);
+        }
+
+        .upload-container {
+            background-color: var(--card-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 30px;
+            transition: border-color 0.3s ease;
+        }
+
+        .upload-container.dragging {
+            border-color: var(--secondary);
+        }
+
+        .upload-container:hover {
+            border-color: var(--secondary);
+        }
+
+        .btn-cargar {
+            background-color: var(--secondary);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .btn-cargar:hover {
+            background-color: var(--accent-color);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #mensaje-error {
+            display: none;
+            color: var(--error-color);
+            background-color: rgba(248, 113, 113, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #mensaje-cargando {
+            display: none;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #contenedor-partitura {
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            padding: 20px;
+            display: none;
+        }
+
+        .controles {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn-control {
+            background-color: var(--black);
+            color: var(--energy-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-control:hover {
+            background-color: var(--primary);
+        }
+
+        #nombre-archivo {
+            margin-left: auto;
+            color: var(--footer-color);
+            font-size: 14px;
+        }
+
+        #alphaTab {
+            overflow-x: auto;
+        }

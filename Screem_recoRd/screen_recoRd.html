@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grabador Avanzado de Pantalla y Multimedia Pro</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #f43f5e;
+            --danger-hover: #e11d48;
+            --success: #10b981;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 2rem;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        select {
+            background-color: #0f172a;
+            color: var(--text);
+            border: 1px solid #475569;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        #btnStart {
+            background-color: var(--accent);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        #btnStart:hover {
+            background-color: var(--accent-hover);
+        }
+
+        #btnStop {
+            background-color: var(--danger);
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        }
+
+        #btnStop:hover {
+            background-color: var(--danger-hover);
+        }
+
+        button:disabled {
+            background-color: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #timer {
+            font-family: monospace;
+            font-size: 1.3rem;
+            background: #0f172a;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            color: var(--accent);
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .video-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-box label {
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        video {
+            width: 100%;
+            background: black;
+            border-radius: 10px;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border: 1px solid #475569;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #downloadLink {
+            display: none;
+            margin-top: 25px;
+            text-align: center;
+            background-color: var(--success);
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        #downloadLink:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Web Screen Recorder Pro</h1>
+    <p class="subtitle">Graba pantalla, audio interno del sistema, cámara externa y micrófono con alta precisión.</p>
+
+    <div class="container">
+        <!-- Selectores de Dispositivos -->
+        <div class="controls-grid">
+            <div class="control-group">
+                <label for="audioSource">Micrófono Externo / Interno:</label>
+                <select id="audioSource">
+                    <option value="">-- Sin Micrófono --</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="videoSource">Cámara Web Externa / Interna:</label>
+                <select id="videoSource">
+                    <option value="">-- Sin Cámara --</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="systemAudio">Audio Interno (Sonido del Sistema/Pestaña):</label>
+                <select id="systemAudio">
+                    <option value="true" selected>Incluir audio interno</option>
+                    <option value="false">No incluir audio interno</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="formatSelect">Formato de Descarga:</label>
+                <select id="formatSelect">
+                    <option value="mp4" selected>MP4 (recomendado)</option>
+                    <option value="webm">WebM</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Botones de Acción y Cronómetro -->
+        <div class="buttons-container">
+            <div class="action-buttons">
+                <button id="btnStart">Iniciar Grabación</button>
+                <button id="btnStop" disabled>Detener Grabación</button>
+            </div>
+            <div id="timer">00:00</div>
+        </div>
+
+        <!-- Previsualización de Vídeos -->
+        <div class="video-container">
+            <div class="video-box">
+                <label>Previsualización de Pantalla (Combinada):</label>
+                <video id="preview" autoplay muted playsinline></video>
+            </div>
+            <div class="video-box">
+                <label>Cámara Web / Externa:</label>
+                <video id="webcam" autoplay muted playsinline></video>
+            </div>
+        </div>
+
+        <a id="downloadLink">Descargar Grabación</a>
+        <p id="formatNotice" style="display:none; text-align:center; color:#facc15; font-size:0.85rem; margin-top:10px;"></p>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        let startTime;
+        let timerInterval;
+        let audioContext;
+        let activeStreams = [];
+
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const downloadLink = document.getElementById('downloadLink');
+        const previewVideo = document.getElementById('preview');
+        const webcamVideo = document.getElementById('webcam');
+        const timerDisplay = document.getElementById('timer');
+        
+        const audioSelect = document.getElementById('audioSource');
+        const videoSelect = document.getElementById('videoSource');
+        const systemAudioSelect = document.getElementById('systemAudio');
+        const formatSelect = document.getElementById('formatSelect');
+        const formatNotice = document.getElementById('formatNotice');
+
+        // Lista de mimeTypes candidatos para MP4, en orden de preferencia.
+        // El soporte de MediaRecorder para MP4 depende del navegador (Chrome/Edge
+        // recientes y Safari lo soportan; Firefox normalmente no). Por eso se
+        // valida con isTypeSupported y, si no hay soporte, se cae a WebM.
+        const MP4_CANDIDATES = [
+            'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+            'video/mp4;codecs=h264,aac',
+            'video/mp4'
+        ];
+        const WEBM_CANDIDATES = [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=vp8,opus',
+            'video/webm'
+        ];
+
+        function resolveMimeType(preferMp4) {
+            const primary = preferMp4 ? MP4_CANDIDATES : WEBM_CANDIDATES;
+            const fallback = preferMp4 ? WEBM_CANDIDATES : MP4_CANDIDATES;
+
+            for (const type of primary) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return { mimeType: type, isMp4: type.includes('mp4'), fellBack: false };
+                }
+            }
+            for (const type of fallback) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return { mimeType: type, isMp4: type.includes('mp4'), fellBack: true };
+                }
+            }
+            // Último recurso: dejar que el navegador elija el default.
+            return { mimeType: '', isMp4: false, fellBack: true };
+        }
+
+        // 1. Enumerar dispositivos multimedia disponibles (micrófonos y cámaras)
+        async function getDevices() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                
+                audioSelect.innerHTML = '<option value="">-- Sin Micrófono --</option>';
+                videoSelect.innerHTML = '<option value="">-- Sin Cámara --</option>';
+
+                devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    if (device.kind === 'audioinput') {
+                        option.text = device.label || `Micrófono (${audioSelect.length})`;
+                        audioSelect.appendChild(option);
+                    } else if (device.kind === 'videoinput') {
+                        option.text = device.label || `Cámara (${videoSelect.length})`;
+                        videoSelect.appendChild(option);
+                    }
+                });
+            } catch (err) {
+                console.warn("Aviso de permisos o dispositivos no detectados:", err);
+            }
+        }
+
+        getDevices();
+        navigator.mediaDevices.addEventListener('devicechange', getDevices);
+
+        // 2. Iniciar proceso de captura avanzada
+        async function startCapture() {
+            try {
+                downloadLink.style.display = 'none';
+                recordedChunks = [];
+
+                const selectedAudioId = audioSelect.value;
+                const selectedVideoId = videoSelect.value;
+                const includeSystemAudio = systemAudioSelect.value === 'true';
+
+                // Capturar pantalla. "displaySurface: monitor" le indica al navegador
+                // que priorice/preseleccione la opción "Pantalla completa" en el
+                // selector nativo (Chrome/Edge la respetan; no todos los navegadores
+                // la soportan, pero el usuario siempre puede elegir manualmente).
+                // El audio del sistema solo se solicita si el usuario lo marcó,
+                // ya que pedirlo sin necesidad puede hacer que el navegador
+                // rechace o complique el permiso de captura de pantalla.
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        cursor: "always",
+                        frameRate: 30,
+                        displaySurface: "monitor"
+                    },
+                    audio: includeSystemAudio
+                        ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                        : false
+                });
+                activeStreams.push(screenStream);
+
+                let webcamStream = null;
+                let micStream = null;
+
+                // Capturar cámara web (interna o externa) si se selecciona
+                if (selectedVideoId) {
+                    webcamStream = await navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: { exact: selectedVideoId } }
+                    });
+                    activeStreams.push(webcamStream);
+                    webcamVideo.srcObject = webcamStream;
+                }
+
+                // Capturar micrófono (interno o externo) si se selecciona
+                if (selectedAudioId) {
+                    micStream = await navigator.mediaDevices.getUserMedia({
+                        audio: { deviceId: { exact: selectedAudioId }, echoCancellation: true, noiseSuppression: true }
+                    });
+                    activeStreams.push(micStream);
+                }
+
+                // Combinación inteligente de fuentes de audio mediante Web Audio API
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const destination = audioContext.createMediaStreamDestination();
+                let hasAudioSource = false;
+
+                // Si la pantalla incluye audio del sistema
+                if (screenStream.getAudioTracks().length > 0) {
+                    const screenAudioSource = audioContext.createMediaStreamSource(new MediaStream(screenStream.getAudioTracks()));
+                    screenAudioSource.connect(destination);
+                    hasAudioSource = true;
+                }
+
+                // Si se añadió un micrófono externo/interno
+                if (micStream && micStream.getAudioTracks().length > 0) {
+                    const micAudioSource = audioContext.createMediaStreamSource(new MediaStream(micStream.getAudioTracks()));
+                    micAudioSource.connect(destination);
+                    hasAudioSource = true;
+                }
+
+                // Generar el stream de audio combinado definitivo
+                const finalAudioTracks = hasAudioSource ? destination.stream.getAudioTracks() : [];
+                const combinedTracks = [...screenStream.getVideoTracks(), ...finalAudioTracks];
+                const combinedStream = new MediaStream(combinedTracks);
+
+                previewVideo.srcObject = combinedStream;
+
+                // Si el usuario detiene la compartición desde la barra flotante del navegador
+                screenStream.getVideoTracks()[0].onended = () => {
+                    stopRecordingProcess();
+                };
+
+                setupRecorder(combinedStream);
+
+            } catch (err) {
+                console.error("Error al iniciar la captura multimedia:", err);
+                alert("No se pudo iniciar la grabación. Asegúrate de conceder permisos y marcar la opción de compartir audio del sistema en el navegador.");
+            }
+        }
+
+        // 3. Configurar el MediaRecorder con el formato elegido por el usuario
+        let currentRecording = { mimeType: '', isMp4: false, fellBack: false };
+
+        function setupRecorder(stream) {
+            const preferMp4 = formatSelect.value === 'mp4';
+            currentRecording = resolveMimeType(preferMp4);
+
+            mediaRecorder = currentRecording.mimeType
+                ? new MediaRecorder(stream, { mimeType: currentRecording.mimeType })
+                : new MediaRecorder(stream);
+
+            // Aviso si se pidió MP4 pero el navegador no lo soporta y se usó WebM
+            if (preferMp4 && !currentRecording.isMp4 && currentRecording.fellBack) {
+                formatNotice.style.display = 'block';
+                formatNotice.textContent = 'Tu navegador no soporta grabación nativa en MP4; se grabará en WebM. Puedes convertirlo a MP4 después con una herramienta externa (ej. ffmpeg, CloudConvert).';
+            } else {
+                formatNotice.style.display = 'none';
+            }
+
+            recordedChunks = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const finalIsMp4 = currentRecording.isMp4;
+                const blobType = finalIsMp4 ? 'video/mp4' : 'video/webm';
+                const extension = finalIsMp4 ? 'mp4' : 'webm';
+
+                const blob = new Blob(recordedChunks, { type: blobType });
+                const url = URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = `grabacion_pro_${Date.now()}.${extension}`;
+                downloadLink.textContent = `Descargar Grabación ${extension.toUpperCase()}`;
+                downloadLink.style.display = 'block';
+                
+                // Apagar todos los dispositivos y liberar recursos
+                activeStreams.forEach(stream => {
+                    stream.getTracks().forEach(track => track.stop());
+                });
+                activeStreams = [];
+
+                if (audioContext && audioContext.state !== 'closed') {
+                    audioContext.close();
+                }
+
+                previewVideo.srcObject = null;
+                webcamVideo.srcObject = null;
+            };
+
+            mediaRecorder.start(250); // Generar chunks cada 250ms para mayor estabilidad
+            startTimer();
+            toggleButtons(true);
+        }
+
+        function stopRecordingProcess() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            stopTimer();
+            toggleButtons(false);
+        }
+
+        // Control de Eventos
+        btnStart.addEventListener('click', startCapture);
+        btnStop.addEventListener('click', stopRecordingProcess);
+
+        function toggleButtons(isRecording) {
+            btnStart.disabled = isRecording;
+            btnStop.disabled = !isRecording;
+        }
+
+        // Gestión del Cronómetro
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const diff = Date.now() - startTime;
+                const seconds = Math.floor(diff / 1000) % 60;
+                const minutes = Math.floor(diff / 60000);
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+    </script>
+</body>
+</html>
